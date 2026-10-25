@@ -303,6 +303,12 @@ export class DevicePropertyComponent implements OnInit, OnDestroy {
 		if (!device.name || !device.type) {
 			return false;
 		}
+
+		// OpenTelemetry requires the Collector OTLP/HTTP endpoint.
+		if (device.type === DeviceType.OpenTelemetry && !device.property?.endpoint) {
+			return false;
+		}
+
 		return (this.data.exist.find((n) => n === device.name)) ? false : true;
 	}
 
@@ -375,7 +381,9 @@ export class DevicePropertyComponent implements OnInit, OnDestroy {
 	}
 
 	isWithPolling() {
-		if (this.data.device?.type === DeviceType.internal) {
+		// if (this.data.device?.type === DeviceType.internal) {
+		// Internal and OpenTelemetry devices do not require polling.
+	    if (this.data.device?.type === DeviceType.internal || this.data.device?.type === DeviceType.OpenTelemetry) {
 			return false;
 		}
 		if (this.appService.isClientApp || this.appService.isDemoApp) {

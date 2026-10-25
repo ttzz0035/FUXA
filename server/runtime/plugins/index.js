@@ -149,7 +149,7 @@ async function addPlugin(plugin, options) {
     const current = installed[normalized.name];
     const isInstalled = current && current.current;
     const needsRuntimeInstall = normalized.pkg || normalized.dynamicPackage || !isInstalled;
-
+    
     if (needsRuntimeInstall && !isInstalled) {
         normalized.current = await manager.installPackage(normalized.name, normalized.version);
         normalized.pkg = true;
@@ -160,6 +160,12 @@ async function addPlugin(plugin, options) {
 
     if (normalized.group !== PluginGroupType.service && normalized.module && normalized.type) {
         await device.loadPlugin(normalized.type, normalized.module);
+    // [CUSTOM] Start bundled service integrations through the existing addPlugin flow
+    } else if (normalized.group === PluginGroupType.service && normalized.localIntegration && normalized.module) {
+        const service = require(path.resolve(__dirname, '../../integrations', normalized.module));
+        await service.start({ logger, settings });
+        // [CUSTOM] Mark the local service as loaded so the existing plugin UI treats it as active
+        normalized.current = normalized.version;
     }
     plugins[normalized.name] = normalized;
     if (addOptions.refreshInstalled !== false) {
@@ -179,6 +185,18 @@ function removePlugin(plugin) {
                 reject(new Error('Invalid plugin'));
                 return;
             }
+            // [CUSTOM] Stop bundled service integrations through the existing removePlugin flow
+            if (normalized.group === PluginGroupType.service && normalized.localIntegration && normalized.module) {
+                const service = require(path.resolve(__dirname, '../../integrations', normalized.module));
+                if (typeof service.stop === 'function') {
+                    // [CUSTOM] Mark the local service as unloaded
+                    normalized.current = '';
+                    plugins[normalized.name] = normalized;
+                    await service.stop({ logger, settings });
+                }
+                resolve();
+                return;
+            }
             if (!manager.isRuntimeManaged(normalized.name)) {
                 reject(new Error(`Package '${normalized.name}' is not installed in the isolated runtime`));
                 return;
@@ -196,10 +214,18 @@ function removePlugin(plugin) {
  * Get the supported plugins list by check in node_modules if installed
  */
 function _checkPluginsSupported() {
+    // [CUSTOM] Preserve the runtime state of bundled local service integrations
+    const currentPlugins = plugins;
     const registry = createDefaultPlugins();
     Object.values(registry).forEach((pg) => {
         pg.current = '';
-        pg.canRemove = false;
+        // pg.canRemove = false;
+        // [CUSTOM] Local service integrations can be unloaded through the existing Remove action
+        pg.canRemove = pg.localIntegration;
+        // [CUSTOM] Preserve the loaded state of bundled local service integrations
+        if (pg.localIntegration && currentPlugins && currentPlugins[pg.name] && currentPlugins[pg.name].current) {
+            pg.current = currentPlugins[pg.name].current;
+        }
     });
     const installed = _scanInstalledPlugins();
     const rootPackages = installed.rootPackages;
@@ -305,6 +331,11 @@ function createDefaultPlugins() {
     registry['mcprotocol'] = new Plugin('mcprotocol', './melsec', 'MELSEC', '0.1.2', PluginGroupType.connectionDevice, true);
     registry['node-red'] = new Plugin('node-red', './node-red', 'node-red', '4.1.0', PluginGroupType.service, true);
     registry['redis'] = new Plugin('redis', './redis', 'REDIS', '5.8.2', PluginGroupType.connectionDevice, true);
+    // 以下にプラグインの登録対象を追記する
+    // [CUSTOM] Register the bundled test service integration
+    registry['test-plugin'] = new Plugin('test-plugin', './test-plugin', 'test-plugin', '0.0.0', PluginGroupType.service, true);
+    // [CUSTOM] Register OpenTelemetry as a connection device plugin
+    registry['@opentelemetry/sdk-node'] = new Plugin('@opentelemetry/sdk-node', './opentelemetry', 'OpenTelemetry', '0.223.0', PluginGroupType.connectionDevice, true);
     return registry;
 }
 
@@ -330,4 +361,6 @@ function Plugin(name, module, type, version, group, dinamic) {
     this.dynamicPackage = false;
     this.custom = false;
     this.canRemove = false;
+    // [CUSTOM] True when the service implementation is provided locally under server/integrations and does not require npm installation
+    this.localIntegration = false;
 }

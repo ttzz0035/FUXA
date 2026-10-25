@@ -19,6 +19,7 @@ var GpioClient = require('./gpio');
 var WebCamClient = require('./webcam');
 var MELSECclient = require('./melsec');
 var REDISclient = require('./redis');
+var Otelclient = require('./opentelemetry');
 
 const path = require('path');
 const utils = require('../utils');
@@ -132,6 +133,12 @@ function Device(data, runtime) {
     //     }
     //     comm = TEMPLATEclient.create(data, logger, events, manager);
     // }
+    else if (data.type === DeviceEnum.OpenTelemetry) {
+        if (!Otelclient) {
+            return null;
+        }
+        comm = Otelclient.create(data, logger, events, manager);
+    }
     if (!comm) {
         return null;
     }
@@ -348,7 +355,9 @@ function Device(data, runtime) {
      */
     this.getTagsProperty = function() {
         return new Promise(function (resolve, reject) {
-            if (data.type === DeviceEnum.WebAPI && comm.getTagsProperty) {
+            // if (data.type === DeviceEnum.WebAPI && comm.getTagsProperty) {
+            // WebAPI and OpenTelemetry provide Tag definitions from the Device implementation.
+            if ((data.type === DeviceEnum.WebAPI || data.type === DeviceEnum.OpenTelemetry) && comm.getTagsProperty) {
                 comm.getTagsProperty().then(function (result) {
                     resolve(result);
                 }).catch(function (err) {
@@ -552,6 +561,8 @@ function loadPlugin(type, module) {
         MELSECclient = require(module);
     } else if (type === DeviceEnum.REDIS) {
         REDISclient = require(module);
+    } else if (type === DeviceEnum.OpenTelemetry) {
+        Otelclient = require(module);
     }
 }
 
@@ -596,6 +607,8 @@ var DeviceEnum = {
     MELSEC: 'MELSEC',
     REDIS: 'REDIS',
     // Template: 'template'
+    // [CUSTOM] OpenTelemetry device
+    OpenTelemetry: 'OpenTelemetry',
 }
 
 /**

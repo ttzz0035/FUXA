@@ -608,6 +608,41 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- [CUSTOM] OpenTelemetry Collector connection settings. -->
+                <div *ngSwitchCase="deviceType.OpenTelemetry">
+                    <div class="my-form-field block mb10">
+                        <span>{{'device.property-opentelemetry-endpoint' | translate}}</span>
+                        <input [(ngModel)]="data.device.property.endpoint"
+                            placeholder="http://localhost:4318"
+                            style="width: 350px"
+                            type="text"
+                            (click)="onAddressChanged()">
+                    </div>
+
+                    <div class="my-form-field block mb10">
+                        <span>{{'device.property-opentelemetry-serviceName' | translate}}</span>
+                        <input [(ngModel)]="data.device.property.serviceName"
+                            placeholder="{{data.device.name}}"
+                            style="width: 350px"
+                            type="text"
+                            (click)="onAddressChanged()">
+                    </div>
+
+                    <!-- [CUSTOM] Configure the sampling percentage shared by OpenTelemetry Logs and Traces. -->
+                    <div class="my-form-field block mb10">
+                        <span>{{'device.property-opentelemetry-sampling' | translate}}</span>
+                        <input [(ngModel)]="data.device.property.samplingPercent"
+                            placeholder="100"
+                            style="width: 350px"
+                            type="number"
+                            min="0"
+                            max="100"
+                            (click)="onAddressChanged()">
+                    </div>
+
+                </div>
+
             </div>
         </div>
     </div>

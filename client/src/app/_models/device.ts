@@ -40,7 +40,7 @@ export class Device {
         id: 'Device id, GUID',
         name: 'Device name',
         enabled: 'Enabled',
-        type: 'Device Type: FuxaServer | SiemensS7 | OPCUA | BACnet | ModbusRTU | ModbusTCP | WebAPI | MQTTclient | internal | EthernetIP | ADSclient | Gpio | WebCam | MELSEC | REDIS',
+        type: 'Device Type: FuxaServer | SiemensS7 | OPCUA | BACnet | ModbusRTU | ModbusTCP | WebAPI | MQTTclient | internal | EthernetIP | ADSclient | Gpio | WebCam | MELSEC | REDIS | OpenTelemetry',
         polling: 'Polling interval in millisec., check changed value after ask value, by OPCUA there is a monitor',
         property: 'Connection property depending of type',
         tags: 'Tags list of Tag',
@@ -253,8 +253,10 @@ export enum DeviceType {
     GPIO = 'GPIO',
     WebCam = 'WebCam',
     MELSEC = 'MELSEC',
-    REDIS = 'REDIS'
+    REDIS = 'REDIS',
     // Template: 'template'
+    // [CUSTOM] OpenTelemetry connection device.
+    OpenTelemetry = 'OpenTelemetry',
 }
 
 export enum TagType {

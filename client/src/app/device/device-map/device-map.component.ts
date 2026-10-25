@@ -525,6 +525,12 @@ export class DeviceMapComponent implements OnInit, OnDestroy, AfterViewInit {
                         } else {
                             delete device.property.timeout;
                         }
+                        // [CUSTOM] Copy OpenTelemetry connection settings from the property dialog.
+                        if (device.type === DeviceType.OpenTelemetry) {
+                            device.property.endpoint = tempdevice.property.endpoint;
+                            device.property.serviceName = tempdevice.property.serviceName;
+                            device.property.samplingPercent = tempdevice.property.samplingPercent;
+                        }
                     }
                     this.projectService.setDevice(device, olddevice, result.security);
                 }
