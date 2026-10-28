@@ -21,7 +21,9 @@
                     </mat-option>
                 </mat-select>
             </div>
-            <ng-container *ngIf="graphType === graphBarType">
+            <!-- <ng-container *ngIf="graphType === graphBarType"> -->
+            <!-- [CUSTOM] Keep existing Bar graph settings hidden for Gantt -->
+            <ng-container *ngIf="graphType === graphBarType && !isGantt">
                 <div class="my-form-field section-item mt5 inbk" style="width: 120px">
                     <span>{{'graph.property-date-last-range' | translate}}</span>
                     <mat-select [(value)]="options.lastRange" [disabled]="!isDateTime(graphCtrl.value)" (selectionChange)="onGraphChanged()">
@@ -43,6 +45,63 @@
                     <mat-slide-toggle color="primary" [checked]="!options.offline" (change)="options.offline = !options.offline;onGraphChanged();"
                                     [disabled]="isDateTime(graphCtrl.value)">
                     </mat-slide-toggle>
+                </div>
+            </ng-container>
+            <!-- [CUSTOM] Gantt time range -->
+            <ng-container *ngIf="isGantt">
+                <div style="display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap;">
+                    <div class="my-form-field section-item mt5 inbk" style="width: 105px">
+                        <span>Range Mode</span>
+                        <mat-select [(value)]="options.rangeMode" (selectionChange)="onGraphChanged()">
+                            <mat-option value="rolling">Rolling</mat-option>
+                            <mat-option value="fixed">Fixed</mat-option>
+                        </mat-select>
+                    </div>
+
+                    <div class="my-form-field section-item mt5" style="width: 145px">
+                        <span>From</span>
+                        <input [(ngModel)]="options.rangeFrom" (change)="onGraphChanged()" type="datetime-local">
+                    </div>
+
+                    <div class="my-form-field section-item mt5" style="width: 145px">
+                        <span>To</span>
+                        <input [(ngModel)]="options.rangeTo" (change)="onGraphChanged()" type="datetime-local">
+                    </div>
+                    <!-- [CUSTOM] Gantt No Data interval -->
+                    <div class="my-form-field section-item mt5" style="width: 145px">
+                        <span>No Data Interval (sec)</span>
+                        <input numberOnly [(ngModel)]="options.noDataIntervalSec" (change)="onGraphChanged()" (keyup.enter)="onGraphChanged()" type="number" min="1">
+                    </div>
+                </div>
+
+                <!-- [CUSTOM] Gantt state color palette -->
+                <div class="my-form-field section-inline-number">
+                    <span>State Count</span>
+                    <input numberOnly [(ngModel)]="options.stateCount" (change)="onGraphChanged()" (keyup.enter)="onGraphChanged()" type="number" min="1" max="16">
+                </div>
+                <!-- [CUSTOM] Gantt state name and color palette -->
+                <div class="mt5" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <ng-container *ngFor="let color of options.stateColors | slice:0:options.stateCount; let i = index">
+                        <div class="my-form-field" style="display: flex; align-items: center; gap: 3px;">
+                            <input
+                                [(colorPicker)]="options.stateColors[i]"
+                                [style.background]="options.stateColors[i]"
+                                [cpPresetColors]="defaultColor"
+                                [cpOKButton]="true"
+                                [cpCancelButton]="true"
+                                [cpPosition]="'auto'"
+                                (colorPickerChange)="onGraphChanged()"
+                                style="width: 14px; height: 14px; min-width: 14px; padding: 0; border: 1px solid #777; cursor: pointer;">
+
+                            <!-- [CUSTOM] Gantt state name -->
+                            <input
+                                [(ngModel)]="options.stateNames[i]"
+                                (change)="onGraphChanged()"
+                                (keyup.enter)="onGraphChanged()"
+                                type="text"
+                                style="width: 70px;">
+                        </div>
+                    </ng-container>
                 </div>
             </ng-container>
         </div>

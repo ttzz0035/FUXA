@@ -258,6 +258,24 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
                     }
                 },
                 (eleadded) => {
+                    // [CUSTOM] Normalize graph subtype from the selected editor mode
+                    if (this.currentMode === 'html_graph-bar') {
+                        eleadded.type = 'svg-ext-html_graph-bar';
+                    } else if (this.currentMode === 'html_graph-pie') {
+                        eleadded.type = 'svg-ext-html_graph-pie';
+                    } else if (this.currentMode === 'html_graph-gantt') {
+                        eleadded.type = 'svg-ext-html_graph-gantt';
+                    }
+
+                    // [CUSTOM] Update the actual SVG element type
+                    const svgElement = document.getElementById(eleadded.id);
+                    if (svgElement && eleadded.type) {
+                        svgElement.setAttribute('type', eleadded.type);
+                    }
+
+                    // [CUSTOM] Temporary debug
+                    console.log('[Editor] added graph =', this.currentMode, eleadded.type);
+
                     let ga: GaugeSettings = this.getGaugeSettings(eleadded, this.ctrlInitParams);
                     this.checkGaugeAdded(ga);
                     setTimeout(() => {

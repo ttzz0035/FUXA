@@ -13,6 +13,8 @@ import { GraphOptions, GraphThemeType } from '../graph-base/graph-base.component
 import { GaugeGraphProperty } from '../../../../_models/hmi';
 import { Utils } from '../../../../_helpers/utils';
 import { GraphPieComponent } from '../graph-pie/graph-pie.component';
+// [CUSTOM] Gantt graph
+import { GraphGanttComponent } from '../graph-gantt/graph-gantt.component';
 
 @Component({
     selector: 'app-graph-property',
@@ -30,6 +32,8 @@ export class GraphPropertyComponent implements OnInit, OnDestroy {
     themeType = GraphThemeType;
     graphBarType = GraphType.bar;
     graphType: GraphType = GraphType.pie;
+    // [CUSTOM] Identify Gantt graph property UI
+    isGantt = false;
     options: GraphOptions;
     defaultColor = Utils.defaultColor;
     lastRangeType = GraphRangeType;
@@ -48,7 +52,9 @@ export class GraphPropertyComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.checkInitProperty();
-        if (this.data.settings.type.endsWith('bar')) {
+        // if (this.data.settings.type.endsWith('bar')) {
+        // [CUSTOM] Gantt uses the same date range settings as Bar
+        if (this.data.settings.type.endsWith('bar') || this.data.settings.type.endsWith('gantt')) {
             Object.keys(this.dateGroupType).forEach(key => {
                 this.translateService.get(this.dateGroupType[key]).subscribe((txt: string) => { this.dateGroupType[key] = txt; });
             });
@@ -66,6 +72,18 @@ export class GraphPropertyComponent implements OnInit, OnDestroy {
         this.checkInitProperty();
         if (this.data.settings.type.endsWith('bar')) {
             this.options = Utils.mergeDeep(GraphBarComponent.DefaultOptions(), this.data.settings.property.options);
+        } else if (this.data.settings.type.endsWith('gantt')) {
+            // [CUSTOM] Initialize Gantt graph options
+            const savedOptions = this.data.settings.property.options as any;
+            this.options = Utils.mergeDeep(GraphGanttComponent.DefaultOptions(), savedOptions);
+
+            // [CUSTOM] Preserve Gantt array settings because mergeDeep is used for common graph options
+            if (savedOptions?.stateNames) {
+                (this.options as any).stateNames = [...savedOptions.stateNames];
+            }
+            if (savedOptions?.stateColors) {
+                (this.options as any).stateColors = [...savedOptions.stateColors];
+            }
         } else if (this.data.settings.type.endsWith('pie')) {
             this.options = Utils.mergeDeep(GraphPieComponent.DefaultOptions(), this.data.settings.property.options);
         }
@@ -80,12 +98,23 @@ export class GraphPropertyComponent implements OnInit, OnDestroy {
 
     private checkInitProperty() {
         if (this.data.settings.type.endsWith('bar')) {
+            this.isGantt = false;
             this.graphType = GraphType.bar;
             if (!this.data.settings.property) {
                 this.data.settings.property = <GaugeGraphProperty>{ id: null, type: null, options: null };
             }
             if (!this.data.settings.property.options) {
                 this.data.settings.property.options = GraphBarComponent.DefaultOptions();
+            }
+        } else if (this.data.settings.type.endsWith('gantt')) {
+            this.isGantt = true;
+            this.graphType = GraphType.bar;
+            // [CUSTOM] Initialize Gantt graph property
+            if (!this.data.settings.property) {
+                this.data.settings.property = <GaugeGraphProperty>{ id: null, type: null, options: null };
+            }
+            if (!this.data.settings.property.options) {
+                this.data.settings.property.options = GraphGanttComponent.DefaultOptions();
             }
         } else if (this.data.settings.type.endsWith('pie')) {
             this.graphType = GraphType.pie;
@@ -103,7 +132,9 @@ export class GraphPropertyComponent implements OnInit, OnDestroy {
         if (this.graphCtrl.value) {
             this.data.settings.property.id = this.graphCtrl.value.id;
             this.data.settings.property.type = this.graphCtrl.value.type;
-            if (this.data.settings.type.endsWith('bar')) {
+            // if (this.data.settings.type.endsWith('bar')) {
+            // [CUSTOM] Gantt uses the same datetime graph settings as Bar
+            if (this.data.settings.type.endsWith('bar') || this.data.settings.type.endsWith('gantt')) {
                 if (!this.isDateTime(this.graphCtrl.value)) {
                     this.options.lastRange = null;
                     this.options.dateGroup = null;
@@ -114,7 +145,9 @@ export class GraphPropertyComponent implements OnInit, OnDestroy {
                 }
             }
         }
-        if (this.data.settings.type.endsWith('bar')) {
+        // if (this.data.settings.type.endsWith('bar')) {
+        // [CUSTOM] Apply common Bar graph grid settings to Gantt
+        if (this.data.settings.type.endsWith('bar') || this.data.settings.type.endsWith('gantt')) {
             this.options.scales['y'].grid.color = this.options.gridLinesColor;
             this.options.scales['y'].grid.display = this.options.gridLinesShow;
             this.options.scales['x'].grid.color = this.options.gridLinesColor;

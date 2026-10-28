@@ -178,6 +178,11 @@
                                 (click)="setMode('html_graph-bar')">
                                 <span class="icon-tool icon-graphbar"></span>
                             </div>
+                            <!-- [CUSTOM] Gantt graph -->
+                            <div class="svg-tool-button" matTooltip="Gantt" [ngClass]="{'svg-tool-active': isModeActive('html_graph-gantt')}"
+                                (click)="setMode('html_graph-gantt')">
+                                <span class="material-icon-tool material-icons">view_timeline</span>
+                            </div>                            
                             <div class="svg-tool-button" matTooltip="{{'editor.controls-table' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-table')}"
                                 (click)="setMode('own_ctrl-table')">
                                 <span class="icon-tool icon-table"></span>

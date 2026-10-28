@@ -5,6 +5,8 @@ import { Utils } from '../../../_helpers/utils';
 import { GaugeDialogType } from '../../gauge-property/gauge-property.component';
 import { GraphBarComponent } from './graph-bar/graph-bar.component';
 import { GraphPieComponent } from './graph-pie/graph-pie.component';
+// [CUSTOM] Gantt graph
+import { GraphGanttComponent } from './graph-gantt/graph-gantt.component';
 import { GraphBaseComponent, GraphOptions } from './graph-base/graph-base.component';
 
 
@@ -19,6 +21,8 @@ export class HtmlGraphComponent extends GaugeBaseComponent {
     static prefixD = 'D-HXC_';
     static suffixPie = '-pie';
     static suffixBar = '-bar';
+    // [CUSTOM] Gantt graph type
+    static suffixGantt = '-gantt';
 
     constructor() {
         super();
@@ -48,9 +52,14 @@ export class HtmlGraphComponent extends GaugeBaseComponent {
             ele?.setAttribute('data-name', gab.name);
             let htmlGraph = Utils.searchTreeStartWith(ele, this.prefixD);
             if (htmlGraph) {
+                // [CUSTOM] Temporary debug
+                console.log('[HtmlGraph]', gab.id, gab.type);
                 let factory = resolver.resolveComponentFactory(GraphBaseComponent);
                 if (gab.type.endsWith(this.suffixBar)) {
                     factory = resolver.resolveComponentFactory(GraphBarComponent);
+                } else if (gab.type.endsWith(this.suffixGantt)) {
+                    // [CUSTOM] Create Gantt graph component
+                    factory = resolver.resolveComponentFactory(GraphGanttComponent);
                 } else {
                     factory = resolver.resolveComponentFactory(GraphPieComponent);
                 }
@@ -69,6 +78,9 @@ export class HtmlGraphComponent extends GaugeBaseComponent {
                 let opt = <GraphOptions>{ panel: { height: htmlGraph.clientHeight, width: htmlGraph.clientWidth } };
                 if (gab.type.endsWith(this.suffixBar)) {
                     opt = { ...GraphBarComponent.DefaultOptions(), ...opt };
+                } else if (gab.type.endsWith(this.suffixGantt)) {
+                    // [CUSTOM] Initialize Gantt graph options
+                    opt = { ...GraphGanttComponent.DefaultOptions(), ...opt };                
                 } else {
                     opt = { ...GraphPieComponent.DefaultOptions(), ...opt };
                 }

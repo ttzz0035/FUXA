@@ -142,6 +142,8 @@ import { GridsterModule } from 'angular-gridster2';
 import { httpInterceptorProviders } from './_helpers/auth-interceptor';
 import { GraphBarComponent } from './gauges/controls/html-graph/graph-bar/graph-bar.component';
 import { GraphPieComponent } from './gauges/controls/html-graph/graph-pie/graph-pie.component';
+// [CUSTOM] Gantt graph
+import { GraphGanttComponent } from './gauges/controls/html-graph/graph-gantt/graph-gantt.component';
 import { GraphPropertyComponent } from './gauges/controls/html-graph/graph-property/graph-property.component';
 import { GraphBaseComponent } from './gauges/controls/html-graph/graph-base/graph-base.component';
 import { NgChartsModule } from 'ng2-charts';
@@ -383,6 +385,8 @@ export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
         CardsViewComponent,
         GraphBarComponent,
         GraphPieComponent,
+        // [CUSTOM] Gantt graph
+        GraphGanttComponent,
         GraphPropertyComponent,
         GraphBaseComponent,
         IframePropertyComponent,

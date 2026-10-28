@@ -1,0 +1,9 @@
+<div style="display: block;" [style.height]="height + 'px'" [style.width]="width + 'px'">
+    <canvas baseChart #ngchart
+            [datasets]="ganttChartData"
+            [labels]="ganttChartLabels"
+            [options]="ganttChartOptions"
+            [plugins]="ganttChartPlugins"
+            [type]="ganttChartType">
+    </canvas>
+</div>
